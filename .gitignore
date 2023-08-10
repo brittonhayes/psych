@@ -1,5 +1,7 @@
 *.db
-./cache
+cache/
+
+*journal
 
 # Created by https://www.toptal.com/developers/gitignore/api/windows,osx,go
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,osx,go
