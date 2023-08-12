@@ -2,7 +2,6 @@ package scrape
 
 import (
 	"context"
-	"time"
 
 	"log/slog"
 
@@ -43,13 +42,7 @@ func (s *scraper) Scrape(config Config) []therapy.Therapist {
 		colly.CacheDir(config.CacheDir),
 	)
 
-	c.Limit(&colly.LimitRule{
-		DomainGlob:  "*psychologytoday.com",
-		Parallelism: 2,
-		Delay:       1 * time.Second,
-	})
-
-	q, err := queue.New(1, &queue.InMemoryQueueStorage{MaxSize: 10})
+	q, err := queue.New(1, &queue.InMemoryQueueStorage{MaxSize: 10000})
 	if err != nil {
 		panic(err)
 	}
@@ -61,35 +54,27 @@ func (s *scraper) Scrape(config Config) []therapy.Therapist {
 		e.ForEach(".results-row-info", func(i int, e *colly.HTMLElement) {
 			therapist.Title = e.ChildText(".profile-title")
 			therapist.Credentials = e.ChildText(".profile-subtitle-credentials")
-			therapist.Verified = e.ChildText(".verified-badge")
+			therapist.Verified = e.ChildText(".verified-badge .profile-subtitle-badge .not-small")
 			therapist.Statement = e.ChildText(".statements")
+			therapist.Link = e.ChildAttr("a", "href")
 		})
 
 		e.ForEach(".results-row-contact", func(i int, e *colly.HTMLElement) {
 			therapist.Phone = e.ChildText(".results-row-mob")
 		})
 
-		s.logger.DebugContext(s.ctx, "therapist found", slog.String("title", therapist.Title))
 		therapists = append(therapists, therapist)
 	})
 
 	c.OnHTML(".pagination", func(e *colly.HTMLElement) {
-		pages := e.ChildAttrs("a", "href")
-		for _, page := range pages {
-			s.logger.DebugContext(s.ctx, "page found", slog.String("page", page))
-			visited, err := c.HasVisited(page)
-			if err != nil {
-				panic(err)
-			}
-
-			if !visited {
-				q.AddURL(page)
-			}
+		hrefs := e.ChildAttrs("a[href].button-element.page-btn", "href")
+		for _, r := range hrefs {
+			q.AddURL(r)
 		}
 	})
 
 	c.OnRequest(func(r *colly.Request) {
-		s.logger.DebugContext(s.ctx, "searching...", slog.String("url", r.URL.String()))
+		s.logger.DebugContext(s.ctx, "requesting url", slog.String("url", r.URL.String()))
 	})
 
 	c.OnError(func(r *colly.Response, err error) {

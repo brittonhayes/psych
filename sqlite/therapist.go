@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/brittonhayes/therapy"
 )
@@ -13,11 +12,20 @@ func (r *repository) Save(ctx context.Context, therapist therapy.Therapist) erro
 		return err
 	}
 
-	r.logger.DebugContext(ctx, "saved therapist", slog.String("title", therapist.Title))
 	return nil
 }
 
 func (r *repository) Find(ctx context.Context, therapist therapy.Therapist) ([]therapy.Therapist, error) {
+	var therapists []therapy.Therapist
+	err := r.db.NewSelect().Model(&therapists).Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return therapists, nil
+}
+
+func (r *repository) List(ctx context.Context) ([]therapy.Therapist, error) {
 	var therapists []therapy.Therapist
 	err := r.db.NewSelect().Model(&therapists).Scan(ctx)
 	if err != nil {

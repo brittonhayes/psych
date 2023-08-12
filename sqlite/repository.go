@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"os"
 	"strings"
 
 	"log/slog"
@@ -22,7 +21,7 @@ type repository struct {
 	db     *bun.DB
 }
 
-func NewRepository(connection string) therapy.Repository {
+func NewRepository(connection string, logger *slog.Logger) therapy.Repository {
 	sqldb, err := sql.Open(sqliteshim.ShimName, connection)
 	if err != nil {
 		panic(err)
@@ -35,7 +34,7 @@ func NewRepository(connection string) therapy.Repository {
 	db.RegisterModel((*therapy.Therapist)(nil))
 
 	return &repository{
-		logger: slog.New(slog.NewJSONHandler(os.Stderr, nil)),
+		logger: logger,
 		m:      migrator,
 		db:     db,
 	}
