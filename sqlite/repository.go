@@ -8,6 +8,7 @@ import (
 	"log/slog"
 
 	"github.com/brittonhayes/therapy"
+	"github.com/brittonhayes/therapy/api"
 	"github.com/brittonhayes/therapy/sqlite/migrations"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/sqlitedialect"
@@ -31,7 +32,7 @@ func NewRepository(connection string, logger *slog.Logger) therapy.Repository {
 
 	migrator := migrate.NewMigrator(db, migrations.Migrations)
 
-	db.RegisterModel((*therapy.Therapist)(nil))
+	db.RegisterModel((*api.Therapist)(nil))
 
 	return &repository{
 		logger: logger,

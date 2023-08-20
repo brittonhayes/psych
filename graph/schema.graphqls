@@ -1,0 +1,30 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Therapist {
+  id: ID! 
+  title: String!
+  credentials: String!
+  verified: String!
+  statement: String!
+  phone: String!
+  location: String!
+  link: String! 
+}
+
+input TherapistFilters {
+  title: String
+  credentials: String
+  verified: String
+  statement: String
+  phone: String
+  location: String
+  link: String
+  limit: Int
+  offset: Int
+}
+
+type Query {
+  therapists(filter: TherapistFilters): [Therapist!]!
+}

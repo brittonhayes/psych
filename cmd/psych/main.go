@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/http"
 	"net/url"
 	"path/filepath"
 	"sort"
@@ -13,11 +14,19 @@ import (
 
 	"log/slog"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/brittonhayes/therapy"
+	"github.com/brittonhayes/therapy/api"
+	"github.com/brittonhayes/therapy/graph"
 	"github.com/brittonhayes/therapy/scrape"
 	"github.com/brittonhayes/therapy/sqlite"
 	"github.com/brittonhayes/therapy/tui"
 	"github.com/urfave/cli/v2"
+)
+
+const (
+	ErrNotEnoughFlags = "not enough flags provided to generate web scraping URL"
 )
 
 func main() {
@@ -152,7 +161,7 @@ func main() {
 					s := scrape.NewScraper(c.Context, logger, repo)
 					therapists := s.Scrape(config)
 
-					uniqueTherapists := map[string]therapy.Therapist{}
+					uniqueTherapists := map[string]api.Therapist{}
 					for _, therapist := range therapists {
 						uniqueTherapists[therapist.Title] = therapist
 					}
@@ -190,6 +199,50 @@ func main() {
 					return tui.Run(therapists)
 				},
 			},
+			{
+				Name: "api",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "port",
+						Usage: "Port to run the API server on",
+						Value: "8080",
+					},
+				},
+				Before: func(c *cli.Context) error {
+					if _, err := os.Stat(c.String("config")); err != nil {
+						err := os.MkdirAll(c.String("config"), fs.ModePerm)
+						if err != nil {
+							return err
+						}
+					}
+
+					repo = sqlite.NewRepository(c.String("db"), logger)
+
+					err := repo.Init(context.Background())
+					if err != nil {
+						return err
+					}
+
+					err = repo.Migrate(context.Background())
+					if err != nil {
+						return err
+					}
+
+					return nil
+				},
+				Action: func(c *cli.Context) error {
+
+					srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
+						Repo: repo,
+					}}))
+
+					http.Handle("/", playground.ApolloSandboxHandler("GraphQL playground", "/query"))
+					http.Handle("/query", srv)
+
+					logger.InfoContext(c.Context, "connect to url for GraphQL playground", slog.String("url", "http://localhost:"+c.String("port")))
+					return http.ListenAndServe(":"+c.String("port"), nil)
+				},
+			},
 		}}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
@@ -217,5 +270,5 @@ func buildURL(state string, county string, city string, zip string) (string, err
 		return url.JoinPath(base, state, city)
 	}
 
-	return "", errors.New("not enough flags provided to generate web scraping URL")
+	return "", errors.New(ErrNotEnoughFlags)
 }

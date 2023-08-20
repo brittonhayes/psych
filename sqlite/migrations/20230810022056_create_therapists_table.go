@@ -3,12 +3,12 @@ package migrations
 import (
 	"context"
 
-	"github.com/brittonhayes/therapy"
+	"github.com/brittonhayes/therapy/api"
 	"github.com/uptrace/bun"
 )
 
 var models = []interface{}{
-	(*therapy.Therapist)(nil),
+	(*api.Therapist)(nil),
 }
 
 func init() {

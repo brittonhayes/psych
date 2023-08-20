@@ -6,12 +6,13 @@ import (
 	"log/slog"
 
 	"github.com/brittonhayes/therapy"
+	"github.com/brittonhayes/therapy/api"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
 )
 
 type Scraper interface {
-	Scrape(config Config) []therapy.Therapist
+	Scrape(config Config) []api.Therapist
 }
 
 type scraper struct {
@@ -33,9 +34,9 @@ func NewScraper(ctx context.Context, logger *slog.Logger, repo therapy.Repositor
 	}
 }
 
-func (s *scraper) Scrape(config Config) []therapy.Therapist {
+func (s *scraper) Scrape(config Config) []api.Therapist {
 
-	therapists := []therapy.Therapist{}
+	therapists := []api.Therapist{}
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("psychologytoday.com", "www.psychologytoday.com"),
@@ -50,7 +51,7 @@ func (s *scraper) Scrape(config Config) []therapy.Therapist {
 	q.AddURL(config.URL)
 
 	c.OnHTML(".results-row", func(e *colly.HTMLElement) {
-		var therapist therapy.Therapist
+		var therapist api.Therapist
 		e.ForEach(".results-row-info", func(i int, e *colly.HTMLElement) {
 			therapist.Title = e.ChildText(".profile-title")
 			therapist.Credentials = e.ChildText(".profile-subtitle-credentials")

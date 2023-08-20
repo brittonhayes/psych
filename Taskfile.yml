@@ -1,0 +1,26 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task: install
+    silent: true
+
+  install:
+    desc: Install psych tool
+    cmds:
+      - go install ./cmd/psych/
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test ./...
+    silent: true
+
+  gen:
+    desc: Generate code
+    cmds:
+      - go generate ./...
+    silent: true

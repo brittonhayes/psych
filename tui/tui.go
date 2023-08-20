@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/brittonhayes/therapy"
+	"github.com/brittonhayes/therapy/api"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -76,7 +76,7 @@ func (m model) View() string {
 	return fmt.Sprintf("%s\n%s\n%s\n", m.bannerView(), m.bodyView(), m.footerView())
 }
 
-func Run(therapists []therapy.Therapist) error {
+func Run(therapists []api.Therapist) error {
 
 	columns := []table.Column{
 		{Title: "Name", Width: 25},
