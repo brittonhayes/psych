@@ -52,12 +52,17 @@ func (s *scraper) Scrape(config Config) []api.Therapist {
 
 	c.OnHTML(".results-row", func(e *colly.HTMLElement) {
 		var therapist api.Therapist
+
 		e.ForEach(".results-row-info", func(i int, e *colly.HTMLElement) {
 			therapist.Title = e.ChildText(".profile-title")
 			therapist.Credentials = e.ChildText(".profile-subtitle-credentials")
 			therapist.Verified = e.ChildText(".verified-badge .profile-subtitle-badge .not-small")
 			therapist.Statement = e.ChildText(".statements")
 			therapist.Link = e.ChildAttr("a", "href")
+		})
+
+		e.ForEach(".profile-features", func(i int, e *colly.HTMLElement) {
+			therapist.AcceptingAppointments = e.ChildText(".accepting-appointments")
 		})
 
 		e.ForEach(".results-row-contact", func(i int, e *colly.HTMLElement) {

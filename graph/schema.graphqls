@@ -5,6 +5,7 @@
 type Therapist {
   id: ID! 
   title: String!
+  accepting_appointments: String!
   credentials: String!
   verified: String!
   statement: String!
@@ -15,6 +16,7 @@ type Therapist {
 
 input TherapistFilters {
   title: String
+  accepting_appointments: Boolean 
   credentials: String
   verified: String
   statement: String

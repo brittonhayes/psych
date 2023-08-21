@@ -50,14 +50,15 @@ type ComplexityRoot struct {
 	}
 
 	Therapist struct {
-		Credentials func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Link        func(childComplexity int) int
-		Location    func(childComplexity int) int
-		Phone       func(childComplexity int) int
-		Statement   func(childComplexity int) int
-		Title       func(childComplexity int) int
-		Verified    func(childComplexity int) int
+		AcceptingAppointments func(childComplexity int) int
+		Credentials           func(childComplexity int) int
+		ID                    func(childComplexity int) int
+		Link                  func(childComplexity int) int
+		Location              func(childComplexity int) int
+		Phone                 func(childComplexity int) int
+		Statement             func(childComplexity int) int
+		Title                 func(childComplexity int) int
+		Verified              func(childComplexity int) int
 	}
 }
 
@@ -91,6 +92,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Therapists(childComplexity, args["filter"].(*therapy.TherapistFilters)), true
+
+	case "Therapist.accepting_appointments":
+		if e.complexity.Therapist.AcceptingAppointments == nil {
+			break
+		}
+
+		return e.complexity.Therapist.AcceptingAppointments(childComplexity), true
 
 	case "Therapist.credentials":
 		if e.complexity.Therapist.Credentials == nil {
@@ -369,6 +377,8 @@ func (ec *executionContext) fieldContext_Query_therapists(ctx context.Context, f
 				return ec.fieldContext_Therapist_id(ctx, field)
 			case "title":
 				return ec.fieldContext_Therapist_title(ctx, field)
+			case "accepting_appointments":
+				return ec.fieldContext_Therapist_accepting_appointments(ctx, field)
 			case "credentials":
 				return ec.fieldContext_Therapist_credentials(ctx, field)
 			case "verified":
@@ -604,6 +614,50 @@ func (ec *executionContext) _Therapist_title(ctx context.Context, field graphql.
 }
 
 func (ec *executionContext) fieldContext_Therapist_title(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Therapist",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Therapist_accepting_appointments(ctx context.Context, field graphql.CollectedField, obj *api.Therapist) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Therapist_accepting_appointments(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AcceptingAppointments, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Therapist_accepting_appointments(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Therapist",
 		Field:      field,
@@ -2660,7 +2714,7 @@ func (ec *executionContext) unmarshalInputTherapistFilters(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "credentials", "verified", "statement", "phone", "location", "link", "limit", "offset"}
+	fieldsInOrder := [...]string{"title", "accepting_appointments", "credentials", "verified", "statement", "phone", "location", "link", "limit", "offset"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -2676,6 +2730,15 @@ func (ec *executionContext) unmarshalInputTherapistFilters(ctx context.Context, 
 				return it, err
 			}
 			it.Title = data
+		case "accepting_appointments":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accepting_appointments"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AcceptingAppointments = data
 		case "credentials":
 			var err error
 
@@ -2852,6 +2915,11 @@ func (ec *executionContext) _Therapist(ctx context.Context, sel ast.SelectionSet
 			}
 		case "title":
 			out.Values[i] = ec._Therapist_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "accepting_appointments":
+			out.Values[i] = ec._Therapist_accepting_appointments(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

@@ -29,19 +29,19 @@ func (r *repository) therapistFilterQuery(query *bun.SelectQuery, params *api.Ge
 	}
 
 	if params.Verified != nil {
-		query.Where("? LIKE ?", bun.Ident("verified"), *params.Verified+"%")
+		query.Where("? LIKE ?", bun.Ident("verified"), "%"+*params.Verified+"%")
 	}
 
 	if params.Statement != nil {
-		query.Where("? LIKE ?", bun.Ident("statement"), *params.Statement+"%")
+		query.Where("? LIKE ?", bun.Ident("statement"), "%"+*params.Statement+"%")
 	}
 
 	if params.Phone != nil {
-		query.Where("? LIKE ?", bun.Ident("phone"), *params.Phone+"%")
+		query.Where("? LIKE ?", bun.Ident("phone"), "%"+*params.Phone+"%")
 	}
 
 	if params.Location != nil {
-		query.Where("? LIKE ?", bun.Ident("location"), *params.Location+"%")
+		query.Where("? LIKE ?", bun.Ident("location"), "%"+*params.Location+"%")
 	}
 
 	return query, nil

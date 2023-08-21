@@ -125,6 +125,12 @@ func main() {
 						Value:    "",
 						Category: "Scraping",
 					},
+					&cli.StringFlag{
+						Name:     "insurance",
+						Usage:    "Insurance to search",
+						Value:    "premera",
+						Category: "Scraping",
+					},
 				),
 				Before: func(c *cli.Context) error {
 					if _, err := os.Stat(c.String("config")); err != nil {
@@ -150,10 +156,11 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 
-					url, err := buildURL(c.String("state"), c.String("county"), c.String("city"), c.String("zip"))
-					if err != nil {
-						return err
-					}
+					// url, err := buildURL(c.String("state"), c.String("county"), c.String("city"), c.String("zip"))
+					// if err != nil {
+					// return err
+					// }
+					url := "https://www.psychologytoday.com/us/therapists/wa/king-county?category=trauma-and-ptsd&page=2&spec=6&spec=506"
 
 					config := scrape.Config{URL: url, CacheDir: filepath.Join(c.String("config"), "cache/")}
 
