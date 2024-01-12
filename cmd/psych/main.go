@@ -18,8 +18,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/brittonhayes/therapy"
 	"github.com/brittonhayes/therapy/api"
+	"github.com/brittonhayes/therapy/fetch"
 	"github.com/brittonhayes/therapy/graph"
-	"github.com/brittonhayes/therapy/scrape"
 	"github.com/brittonhayes/therapy/sqlite"
 	"github.com/brittonhayes/therapy/tui"
 	"github.com/urfave/cli/v2"
@@ -110,7 +110,8 @@ func main() {
 				},
 			},
 			{
-				Name: "scrape",
+				Name:  "fetch",
+				Usage: "Fetch the latest therapists from the web",
 				Flags: append(globalFlags,
 					&cli.StringFlag{
 						Name:     "state",
@@ -184,11 +185,11 @@ func main() {
 						return err
 					}
 
-					config := scrape.Config{URL: url, CacheDir: filepath.Join(c.String("config"), "cache/")}
+					config := fetch.Config{URL: url, CacheDir: filepath.Join(c.String("config"), "cache/")}
 
 					logger.InfoContext(c.Context, "Scraping psychologytoday.com for therapists")
-					s := scrape.NewScraper(c.Context, logger, repo)
-					therapists := s.Scrape(config)
+					s := fetch.NewFetcher(c.Context, logger, repo)
+					therapists := s.Fetch(config)
 
 					uniqueTherapists := map[string]api.Therapist{}
 					for _, therapist := range therapists {

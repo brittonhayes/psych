@@ -1,4 +1,4 @@
-package scrape
+package fetch
 
 import (
 	"context"
@@ -11,11 +11,11 @@ import (
 	"github.com/gocolly/colly/v2/queue"
 )
 
-type Scraper interface {
-	Scrape(config Config) []api.Therapist
+type Fetcher interface {
+	Fetch(config Config) []api.Therapist
 }
 
-type scraper struct {
+type fetcher struct {
 	ctx    context.Context
 	repo   therapy.Repository
 	logger *slog.Logger
@@ -26,15 +26,15 @@ type Config struct {
 	URL      string
 }
 
-func NewScraper(ctx context.Context, logger *slog.Logger, repo therapy.Repository) Scraper {
-	return &scraper{
+func NewFetcher(ctx context.Context, logger *slog.Logger, repo therapy.Repository) Fetcher {
+	return &fetcher{
 		ctx:    ctx,
 		repo:   repo,
 		logger: logger,
 	}
 }
 
-func (s *scraper) Scrape(config Config) []api.Therapist {
+func (s *fetcher) Fetch(config Config) []api.Therapist {
 
 	therapists := []api.Therapist{}
 

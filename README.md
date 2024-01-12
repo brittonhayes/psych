@@ -28,19 +28,19 @@ docker run -p 8080:8080 ghcr.io/brittonhayes/psych -- api --port 8080
 
 Psych provides a set of commands to perform various tasks. Here's a brief overview:
 
-### Scrape
+### Fetch 
 
-Use the `scrape` command to retrieve therapist information from psychologytoday.com.
+Use the `fetch` command to retrieve therapist from the web
 
 ```bash
 # Retrieve all therapists in the United States in your county
-psych scrape --state <state> --county <county>
+psych fetch --state <state> --county <county>
 
 # Retrieve all therapists in your zip code
-psych scrape --zip <zip>
+psych fetch --zip <zip>
 
 # Retrieve all therapists in your city
-psych scrape --city <city> --state <state>
+psych fetch --city <city> --state <state>
 ```
 
 Replace `<state>`, `<county>`, `<city>`, and `<zip>` with the desired criteria for searching therapists.
