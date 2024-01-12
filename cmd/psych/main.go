@@ -25,6 +25,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var Version = "development"
+
 const (
 	ErrNotEnoughFlags = "not enough flags provided to generate web scraping URL"
 )
@@ -68,11 +70,20 @@ func main() {
 	}
 
 	app := &cli.App{
-		Name:                   "psych",
-		Usage:                  "Find therapists on psychologytoday.com",
+		Name:        "psych",
+		Description: "Find a mental health professional",
+		Usage: `# Retrieve all therapists in the United States in your county
+		psych scrape --state <state> --county <county>
+		
+		# Retrieve all therapists in your zip code
+		psych scrape --zip <zip>
+		
+		# Retrieve all therapists in your city
+		psych scrape --city <city> --state <state>`,
 		Suggest:                true,
 		EnableBashCompletion:   true,
 		UseShortOptionHandling: true,
+		Version:                Version,
 		Flags:                  globalFlags,
 		Before: func(c *cli.Context) error {
 			if c.Bool("verbose") {
@@ -106,6 +117,18 @@ func main() {
 						Usage:    "State to search",
 						Value:    "",
 						Category: "Scraping",
+					},
+					&cli.StringFlag{
+						Name:     "country",
+						Usage:    "Country to search",
+						Value:    "us",
+						Category: "Scraping",
+						Action: func(ctx *cli.Context, s string) error {
+							if s != "us" && s != "ca" {
+								return errors.New("only us or ca are supported at this time")
+							}
+							return nil
+						},
 					},
 					&cli.StringFlag{
 						Name:     "city",
@@ -156,7 +179,7 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 
-					url, err := buildURL(c.String("state"), c.String("county"), c.String("city"), c.String("zip"))
+					url, err := buildURL(c.String("state"), c.String("country"), c.String("county"), c.String("city"), c.String("zip"))
 					if err != nil {
 						return err
 					}
@@ -261,8 +284,8 @@ func main() {
 	}
 }
 
-func buildURL(state string, county string, city string, zip string) (string, error) {
-	base := "https://www.psychologytoday.com/us/therapists/"
+func buildURL(state string, country string, county string, city string, zip string) (string, error) {
+	base := fmt.Sprintf("https://www.psychologytoday.com/%s/therapists/", country)
 
 	if zip != "" {
 		return url.JoinPath(base, zip)
