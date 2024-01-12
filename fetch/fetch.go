@@ -41,6 +41,7 @@ func (s *fetcher) Fetch(config Config) []api.Therapist {
 	c := colly.NewCollector(
 		colly.AllowedDomains("psychologytoday.com", "www.psychologytoday.com"),
 		colly.CacheDir(config.CacheDir),
+		colly.ParseHTTPErrorResponse(),
 	)
 
 	q, err := queue.New(1, &queue.InMemoryQueueStorage{MaxSize: 10000})
@@ -52,6 +53,8 @@ func (s *fetcher) Fetch(config Config) []api.Therapist {
 
 	c.OnHTML(".results-row", func(e *colly.HTMLElement) {
 		var therapist api.Therapist
+
+		s.logger.DebugContext(s.ctx, "scraping therapist", slog.String("name", e.ChildText(".results-row-name")))
 
 		e.ForEach(".results-row-info", func(i int, e *colly.HTMLElement) {
 			therapist.Title = e.ChildText(".profile-title")
@@ -84,7 +87,8 @@ func (s *fetcher) Fetch(config Config) []api.Therapist {
 	})
 
 	c.OnError(func(r *colly.Response, err error) {
-		s.logger.ErrorContext(s.ctx, "scraper encountered error", err)
+		s.logger.ErrorContext(s.ctx, "fetcher encountered error", err)
+		s.logger.DebugContext(s.ctx, "error at url", slog.String("url", r.Request.URL.String()))
 	})
 
 	err = q.Run(c)

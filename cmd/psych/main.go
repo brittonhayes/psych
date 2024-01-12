@@ -7,8 +7,11 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
+	"strings"
 
 	"os"
 
@@ -52,9 +55,8 @@ func main() {
 
 	globalFlags := []cli.Flag{
 		&cli.BoolFlag{
-			Name:    "verbose",
-			Aliases: []string{"v"},
-			Usage:   "Enable verbose logging",
+			Name:  "verbose",
+			Usage: "Enable verbose logging",
 		},
 		&cli.StringFlag{
 			Name:    "config",
@@ -77,6 +79,9 @@ func main() {
 		
 		# Retrieve all therapists in your zip code
 		psych fetch --zip <zip>
+
+		# Retrieve all therapists in your zip code and view in browser
+		psych fetch --zip <zip> --view
 		
 		# Retrieve all therapists in your city
 		psych fetch --city <city> --state <state>`,
@@ -94,7 +99,7 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			{
-				Name:  "refresh",
+				Name:  "clear",
 				Usage: "Clear the cache and sqlite database",
 				Flags: globalFlags,
 				Action: func(c *cli.Context) error {
@@ -124,6 +129,8 @@ func main() {
 						Usage:    "Country to search",
 						Value:    "us",
 						Category: "Fetching",
+						// Temporarily hidden until supported
+						Hidden: true,
 						Action: func(ctx *cli.Context, s string) error {
 							if s != "us" && s != "ca" {
 								return errors.New("only us or ca are supported at this time")
@@ -148,12 +155,29 @@ func main() {
 						Usage:    "County to search",
 						Value:    "",
 						Category: "Fetching",
+						Action: func(ctx *cli.Context, s string) error {
+							if !strings.HasSuffix(s, "-county") {
+								return fmt.Errorf("county must end with '-county' (e.g. 'king-county')")
+							}
+							return nil
+						},
 					},
 					&cli.StringFlag{
 						Name:     "insurance",
 						Usage:    "Insurance to search",
 						Value:    "premera",
 						Category: "Fetching",
+					},
+					&cli.BoolFlag{
+						Name:     "view",
+						Usage:    "Enable GraphQL browser playground upon completion",
+						Value:    false,
+						Category: "Fetching",
+					},
+					&cli.StringFlag{
+						Name:  "port",
+						Usage: "Port to run the GraphQL server on",
+						Value: "8080",
 					},
 				),
 				Before: func(c *cli.Context) error {
@@ -180,7 +204,7 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 
-					url, err := buildURL(c.String("state"), c.String("country"), c.String("county"), c.String("city"), c.String("zip"))
+					url, err := buildURL(c.String("state"), c.String("county"), c.String("city"), c.String("zip"))
 					if err != nil {
 						return err
 					}
@@ -208,34 +232,26 @@ func main() {
 					logger.InfoContext(c.Context, "Saved therapists to database", slog.Int("count", len(uniqueTherapists)))
 					return nil
 				},
-			},
-			{
-				Name:  "browse",
-				Usage: "Browse therapists in the terminal",
-				Action: func(c *cli.Context) error {
-					if repo == nil {
-						repo = sqlite.NewRepository(c.String("db"), logger)
+				After: func(c *cli.Context) error {
+					if c.Bool("view") {
+						return c.App.Run([]string{c.App.Name, "view", "--port", c.String("port"), "--web"})
 					}
-
-					therapists, err := repo.List(c.Context)
-					if err != nil {
-						return err
-					}
-
-					if len(therapists) == 0 {
-						return errors.New("no therapists found - please run the scrape command first")
-					}
-
-					return tui.Run(therapists)
+					return nil
 				},
 			},
 			{
-				Name: "api",
+				Name:        "view",
+				Description: "View therapists in the terminal or in a browser",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:  "port",
-						Usage: "Port to run the API server on",
+						Usage: "Port to run the GraphQL playground on",
 						Value: "8080",
+					},
+					&cli.BoolFlag{
+						Name:    "web",
+						Usage:   "Open GraphQL playground in browser",
+						Aliases: []string{"w"},
 					},
 				},
 				Before: func(c *cli.Context) error {
@@ -261,16 +277,29 @@ func main() {
 					return nil
 				},
 				Action: func(c *cli.Context) error {
+					if c.Bool("web") {
+						srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
+							Repo: repo,
+						}}))
 
-					srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-						Repo: repo,
-					}}))
+						http.Handle("/", playground.ApolloSandboxHandler("GraphQL playground", "/query"))
+						http.Handle("/query", srv)
 
-					http.Handle("/", playground.ApolloSandboxHandler("GraphQL playground", "/query"))
-					http.Handle("/query", srv)
+						logger.InfoContext(c.Context, "connect to url for GraphQL playground", slog.String("url", "http://localhost:"+c.String("port")))
+						openBrowser(fmt.Sprintf("http://localhost:%s", c.String("port")))
+						return http.ListenAndServe(":"+c.String("port"), nil)
+					}
 
-					logger.InfoContext(c.Context, "connect to url for GraphQL playground", slog.String("url", "http://localhost:"+c.String("port")))
-					return http.ListenAndServe(":"+c.String("port"), nil)
+					therapists, err := repo.List(c.Context)
+					if err != nil {
+						return err
+					}
+
+					if len(therapists) == 0 {
+						return errors.New("no therapists found - please run the scrape command first")
+					}
+
+					return tui.Run(therapists)
 				},
 			},
 		}}
@@ -285,8 +314,8 @@ func main() {
 	}
 }
 
-func buildURL(state string, country string, county string, city string, zip string) (string, error) {
-	base := fmt.Sprintf("https://www.psychologytoday.com/%s/therapists/", country)
+func buildURL(state string, county string, city string, zip string) (string, error) {
+	base := fmt.Sprintf("https://www.psychologytoday.com/us/therapists/")
 
 	if zip != "" {
 		return url.JoinPath(base, zip)
@@ -301,4 +330,17 @@ func buildURL(state string, country string, county string, city string, zip stri
 	}
 
 	return "", errors.New(ErrNotEnoughFlags)
+}
+
+func openBrowser(url string) error {
+	switch runtime.GOOS {
+	case "linux":
+		return exec.Command("xdg-open", url).Start()
+	case "windows":
+		return exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		return exec.Command("open", url).Start()
+	default:
+		return errors.New("unsupported platform")
+	}
 }

@@ -8,7 +8,7 @@ Meet **Psych**, a Go application that allows you to find therapists from psychol
 
 - **Fetching:** Retrieve therapist information from psychologytoday.com based on various criteria such as state, county, city, or zip code.
 - **Browsing:** View therapist information in the terminal in a user-friendly interface.
-- **GraphQL API:** Run a GraphQL server to query therapist data programmatically.
+- **GraphQL Playground:** Run a GraphQL server to query therapist data programmatically.
 
 ## Installation
 
@@ -18,10 +18,10 @@ Meet **Psych**, a Go application that allows you to find therapists from psychol
 go install github.com/brittonhayes/psych@latest
 ```
 
-### Install with Docker
+### Run with Docker
 
 ```bash
-docker run -p 8080:8080 ghcr.io/brittonhayes/psych -- api --port 8080
+docker run -p 8080:8080 ghcr.io/brittonhayes/psych -- fetch --state <state> --county <county> --zip <zip> --view
 ```
 
 ## Usage
@@ -47,18 +47,32 @@ Replace `<state>`, `<county>`, `<city>`, and `<zip>` with the desired criteria f
 
 ### Browse
 
-Browse therapists in the terminal using the `browse` command.
+Browse therapists in the terminal using the `view` command.
 
 ```bash
-psych browse
+psych view
 ```
 
-### GraphQL API
+### GraphQL Playground 
 
-Run a GraphQL API server to query therapist data using the `api` command.
+Run a GraphQL playground to query therapist data using the `view -w` command.
 
 ```bash
-psych api --port <port>
+psych view --port <port> -w
+```
+
+Example GraphQL query
+
+```graphql
+{
+  therapists(filter: { credentials: "LMFT" }) {
+    title
+    accepting_appointments
+    credentials
+    statement
+    link
+  }
+}
 ```
 
 Replace `<port>` with the desired port number for the GraphQL server.
