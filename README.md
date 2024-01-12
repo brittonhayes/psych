@@ -21,8 +21,6 @@ go install github.com/brittonhayes/psych@latest
 ### Install with Docker
 
 ```bash
-
-```bash
 docker run -p 8080:8080 ghcr.io/brittonhayes/psych -- api --port 8080
 ```
 
