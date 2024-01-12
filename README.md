@@ -18,6 +18,14 @@ Meet **Psych**, a Go application that allows you to find therapists from psychol
 go install github.com/brittonhayes/psych@latest
 ```
 
+### Install with Docker
+
+```bash
+
+```bash
+docker run -p 8080:8080 ghcr.io/brittonhayes/psych -- api --port 8080
+```
+
 ## Usage
 
 Psych provides a set of commands to perform various tasks. Here's a brief overview:
