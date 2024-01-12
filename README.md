@@ -21,7 +21,9 @@ go install github.com/brittonhayes/psych@latest
 ### Run with Docker
 
 ```bash
-docker run -p 8080:8080 ghcr.io/brittonhayes/psych -- fetch --state <state> --county <county> --zip <zip> --view
+docker run --rm -p 8080:8080 ghcr.io/brittonhayes/psych:latest -- fetch --state <state> --county <county> --zip <zip> --view
+
+# e.g. docker run -p 8080:8080 ghcr.io/brittonhayes/psych -- fetch --state wa --county king-county --zip 98027 --view
 ```
 
 ## Usage
