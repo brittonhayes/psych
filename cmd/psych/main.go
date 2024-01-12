@@ -73,13 +73,13 @@ func main() {
 		Name:        "psych",
 		Description: "Find a mental health professional",
 		Usage: `# Retrieve all therapists in the United States in your county
-		psych scrape --state <state> --county <county>
+		psych fetch --state <state> --county <county>
 		
 		# Retrieve all therapists in your zip code
-		psych scrape --zip <zip>
+		psych fetch --zip <zip>
 		
 		# Retrieve all therapists in your city
-		psych scrape --city <city> --state <state>`,
+		psych fetch --city <city> --state <state>`,
 		Suggest:                true,
 		EnableBashCompletion:   true,
 		UseShortOptionHandling: true,
@@ -117,13 +117,13 @@ func main() {
 						Name:     "state",
 						Usage:    "State to search",
 						Value:    "",
-						Category: "Scraping",
+						Category: "Fetching",
 					},
 					&cli.StringFlag{
 						Name:     "country",
 						Usage:    "Country to search",
 						Value:    "us",
-						Category: "Scraping",
+						Category: "Fetching",
 						Action: func(ctx *cli.Context, s string) error {
 							if s != "us" && s != "ca" {
 								return errors.New("only us or ca are supported at this time")
@@ -135,25 +135,25 @@ func main() {
 						Name:     "city",
 						Usage:    "City to search",
 						Value:    "",
-						Category: "Scraping",
+						Category: "Fetching",
 					},
 					&cli.StringFlag{
 						Name:     "zip",
 						Usage:    "Zip code to search",
 						Value:    "",
-						Category: "Scraping",
+						Category: "Fetching",
 					},
 					&cli.StringFlag{
 						Name:     "county",
 						Usage:    "County to search",
 						Value:    "",
-						Category: "Scraping",
+						Category: "Fetching",
 					},
 					&cli.StringFlag{
 						Name:     "insurance",
 						Usage:    "Insurance to search",
 						Value:    "premera",
-						Category: "Scraping",
+						Category: "Fetching",
 					},
 				),
 				Before: func(c *cli.Context) error {
@@ -187,7 +187,7 @@ func main() {
 
 					config := fetch.Config{URL: url, CacheDir: filepath.Join(c.String("config"), "cache/")}
 
-					logger.InfoContext(c.Context, "Scraping psychologytoday.com for therapists")
+					logger.InfoContext(c.Context, "Fetching psychologytoday.com for therapists")
 					s := fetch.NewFetcher(c.Context, logger, repo)
 					therapists := s.Fetch(config)
 

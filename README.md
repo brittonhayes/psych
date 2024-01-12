@@ -1,12 +1,12 @@
 # 👩‍⚕️ Psych - Find a mental health professional
 
-Meet **Psych**, a Go application that allows you to find therapists from psychologytoday.com using a more powerful search engine. This tool provides various functionalities, including web scraping, browsing therapists in the terminal, and running a GraphQL API server to more effectively search for a therapist that meets your needs.
+Meet **Psych**, a Go application that allows you to find therapists from psychologytoday.com using a more powerful search engine. This tool provides various functionalities, including pulling therapists from the web, browsing therapists in the terminal, and running a GraphQL playground to more effectively search for a therapist that meets your needs.
 
 <img src="https://raw.githubusercontent.com/ashleymcnamara/gophers/master/GOPHER_SHARE.png" alt="drawing" width="300"/>
 
 ## Features
 
-- **Scraping:** Retrieve therapist information from psychologytoday.com based on various criteria such as state, county, city, or zip code.
+- **Fetching:** Retrieve therapist information from psychologytoday.com based on various criteria such as state, county, city, or zip code.
 - **Browsing:** View therapist information in the terminal in a user-friendly interface.
 - **GraphQL API:** Run a GraphQL server to query therapist data programmatically.
 
