@@ -156,11 +156,10 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 
-					// url, err := buildURL(c.String("state"), c.String("county"), c.String("city"), c.String("zip"))
-					// if err != nil {
-					// return err
-					// }
-					url := "https://www.psychologytoday.com/us/therapists/wa/king-county?category=trauma-and-ptsd&page=2&spec=6&spec=506"
+					url, err := buildURL(c.String("state"), c.String("county"), c.String("city"), c.String("zip"))
+					if err != nil {
+						return err
+					}
 
 					config := scrape.Config{URL: url, CacheDir: filepath.Join(c.String("config"), "cache/")}
 
