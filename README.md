@@ -79,7 +79,7 @@ Replace `<port>` with the desired port number for the GraphQL server.
 
 ### Additional Flags
 
-- Use `-v` or `--verbose` to enable verbose logging.
+- Use `--verbose` to enable verbose logging.
 - Use `-c` or `--config` to specify the configuration directory path.
 - Use `--db` to specify the path to the SQLite DB file.
 
