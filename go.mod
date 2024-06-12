@@ -12,7 +12,7 @@ require (
 	github.com/uptrace/bun/dialect/sqlitedialect v1.1.14
 	github.com/uptrace/bun/driver/sqliteshim v1.1.14
 	github.com/urfave/cli/v2 v2.25.7
-	github.com/vektah/gqlparser/v2 v2.5.8
+	github.com/vektah/gqlparser/v2 v2.5.14
 )
 
 require (
@@ -35,6 +35,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
